@@ -24,7 +24,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col transition-colors duration-500 overflow-hidden relative">
+      <div className="min-h-screen flex flex-col transition-colors duration-500 overflow-hidden relative home-gradient">
         {/* Animated Background Blobs */}
         <div className="bg-blob blob-1"></div>
         <div className="bg-blob blob-2"></div>
@@ -34,9 +34,8 @@ const App: React.FC = () => {
         
         <main className="flex-1 flex flex-col w-full mx-auto relative">
           <Routes>
-            {/* Default Route: Home */}
             <Route path="/" element={
-              <div className="pt-24 min-h-screen flex flex-col items-center justify-center home-gradient">
+              <div className="pt-24 min-h-screen flex flex-col items-center justify-center">
                 <Home />
               </div>
             } />
@@ -55,7 +54,6 @@ const App: React.FC = () => {
             
             <Route path="/tycoon" element={<EraTycoon />} />
 
-            {/* Fallback to Home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
