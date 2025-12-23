@@ -1,4 +1,5 @@
 
+// Added React import to resolve namespace issues
 import React, { useMemo, memo } from 'react';
 import { Building, ResourceMap, ResourceType, Era, Manager, Rarity } from '../types';
 import { ICON_MAP, ERA_ORDER, MILESTONES, REBIRTH_UPGRADES } from '../constants';
@@ -83,27 +84,17 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
 
     const mult = (1 + (building.upgradeLevel * 0.5)) * specificProdMult * globalProdMult * mastery * rebirthBonus * mBoost * rBoost * yM * sM;
     
-    // CONTEXT-AWARE FILTERING: Only show legacy upgrades that are relevant to THIS facility
     const legacy = REBIRTH_UPGRADES.filter(u => {
-      // 1. Must be owned
       if (!rebirthUpgradeIds.includes(u.id)) return false;
-
       const { type, target } = u.bonus;
-
-      // 2. Production/Yield checks
       if (type === 'production' || type === 'manual_yield') {
         if (target === 'all') return true;
         return target === building.produces.resource;
       }
-
-      // 3. Science Gain checks
       if (type === 'science_gain') {
         return building.produces.resource === 'science';
       }
-
-      // 4. Cost Reduction checks
       if (type === 'cost_reduction') {
-        // Handle specific hard-coded description logic (like Earthly Affinity for Wood/Stone)
         if (u.id === 'rb_res_1') {
            const usesStoneOrWood = 
              building.baseCosts.wood !== undefined || 
@@ -111,23 +102,15 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
              (building.upgradeBaseCosts && (building.upgradeBaseCosts.wood !== undefined || building.upgradeBaseCosts.stone !== undefined));
            return usesStoneOrWood;
         }
-
         if (target === 'all') return true;
-        
-        // Target-specific check
-        const usesTarget = 
-          building.baseCosts[target!] !== undefined || 
-          (building.upgradeBaseCosts && building.upgradeBaseCosts[target!] !== undefined);
+        const usesTarget = building.baseCosts[target!] !== undefined || (building.upgradeBaseCosts && building.upgradeBaseCosts[target!] !== undefined);
         return usesTarget;
       }
-
-      // 5. Consumption Reduction checks
       if (type === 'consumption_reduction') {
         if (!building.consumes) return false;
         if (target === 'all') return true;
         return target === building.consumes.resource;
       }
-
       return false;
     }); 
 
@@ -166,31 +149,31 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
   return (
     <div 
       onClick={(e) => onGather(building.id, e.clientX, e.clientY)}
-      className={`p-5 rounded-3xl border-2 bg-slate-900/60 border-slate-800 transition-all cursor-pointer select-none active:scale-[0.98] hover:bg-slate-800/80 group overflow-hidden flex flex-col h-full min-h-[30rem] ${isHighRarity ? 'border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' : ''}`}
+      className={`p-4 sm:p-5 rounded-3xl border-2 bg-slate-900/60 border-slate-800 transition-all cursor-pointer select-none active:scale-[0.98] hover:bg-slate-800/80 group overflow-hidden flex flex-col h-full min-h-[28rem] sm:min-h-[30rem] ${isHighRarity ? 'border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' : ''}`}
     >
       <div className="flex justify-between items-start mb-3 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="relative">
-             <span className="text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{ICON_MAP[building.icon] || '🏗️'}</span>
+          <div className="relative shrink-0">
+             <span className="text-3xl sm:text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{ICON_MAP[building.icon] || '🏗️'}</span>
              {isAutomated && (
-               <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-950 rounded-full animate-pulse" />
+               <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-emerald-500 border-2 border-slate-950 rounded-full animate-pulse" />
              )}
           </div>
-          <div>
-            <h3 className="font-black text-lg text-white leading-tight">{building.name}</h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{building.type}</span>
-              <span className="w-1 h-1 rounded-full bg-slate-700" />
-              <span className={`text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border whitespace-nowrap ${ERA_TAG_THEME[building.era]}`}>
+          <div className="min-w-0">
+            <h3 className="font-black text-base sm:text-lg text-white leading-tight truncate">{building.name}</h3>
+            <div className="flex items-center gap-2 mt-0.5 overflow-hidden">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{building.type}</span>
+              <span className="w-1 h-1 rounded-full bg-slate-700 shrink-0" />
+              <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border whitespace-nowrap ${ERA_TAG_THEME[building.era]}`}>
                 {building.era}
               </span>
             </div>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <div className="flex flex-col items-end">
-            <span className="text-xs font-black text-emerald-400 uppercase tracking-tighter">Owned: {building.count}</span>
-            <div className="flex items-center gap-1.5 mt-1.5">
+            <span className="text-[10px] sm:text-xs font-black text-emerald-400 uppercase tracking-tighter">Owned: {building.count}</span>
+            <div className="flex items-center gap-1.5 mt-1">
               <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${isAutomated ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
                 {isAutomated ? 'AUTO' : 'MANUAL'}
               </span>
@@ -199,26 +182,22 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
         </div>
       </div>
 
-      {/* Description Box - Using min-height and proper alignment to prevent clipping */}
       <div className="min-h-[2.5rem] mb-4 shrink-0 flex items-center">
-        <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{building.description}</p>
+        <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{building.description}</p>
       </div>
 
-      {/* Manager Status Block */}
-      <div className="h-32 mb-4 overflow-hidden shrink-0">
+      <div className="h-28 sm:h-32 mb-4 overflow-hidden shrink-0">
         {manager && manager.isActive ? (
-          <div className={`h-full p-4 rounded-2xl border flex flex-col justify-center gap-2 transition-all duration-300 ${RARITY_THEME[manager.rarity]} border-current/20 shadow-inner`}>
+          <div className={`h-full p-3 sm:p-4 rounded-2xl border flex flex-col justify-center gap-1 sm:gap-2 transition-all duration-300 ${RARITY_THEME[manager.rarity]} border-current/20 shadow-inner`}>
             <div className="flex justify-between items-center">
-              <span className="text-[12px] font-black uppercase tracking-widest opacity-90 leading-none">LVL {manager.level} MANAGER</span>
+              <span className="text-[10px] sm:text-[12px] font-black uppercase tracking-widest opacity-90 leading-none">LVL {manager.level} MANAGER</span>
             </div>
-            
             <div className="w-full h-[1px] bg-current/10 my-0.5" />
-            
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <div className="grid grid-cols-2 gap-x-2 sm:gap-x-4 gap-y-1">
               {manager.boosts.map((b, i) => (
                 <div key={i} className="flex flex-col">
-                  <span className="text-[10px] uppercase font-black opacity-60 leading-none mb-1">{b.type}</span>
-                  <span className="text-[17px] font-black tracking-tight leading-none">
+                  <span className="text-[9px] sm:text-[10px] uppercase font-black opacity-60 leading-none mb-1">{b.type}</span>
+                  <span className="text-[14px] sm:text-[17px] font-black tracking-tight leading-none">
                     {b.type === 'special' ? 'x' : '+'}{formatNumber(b.type === 'special' ? (1 + b.value * manager.level) : b.value * manager.level * 100)}{b.type === 'special' ? '' : '%'}
                   </span>
                 </div>
@@ -226,27 +205,26 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
             </div>
           </div>
         ) : (
-          <div className="w-full h-full border border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center bg-slate-900/40 gap-1 text-center p-4">
-            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">No Manager Active</span>
+          <div className="w-full h-full border border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center bg-slate-900/40 gap-1 text-center p-3 sm:p-4">
+            <span className="text-[9px] sm:text-[10px] font-black text-slate-700 uppercase tracking-widest">No Manager Active</span>
             <span className="text-[8px] text-slate-600 font-bold uppercase leading-tight">Passive collection inactive<br/>Requires manager</span>
           </div>
         )}
       </div>
 
-      {/* Legacy Synergy Section - Context-filtered legacy boosts */}
       {hasLegacyBoost && (
-        <div className="mb-4 bg-rose-500/5 border border-rose-500/20 p-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-500 shrink-0 h-32 flex flex-col overflow-hidden">
+        <div className="mb-4 bg-rose-500/5 border border-rose-500/20 p-2 sm:p-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-500 shrink-0 h-28 sm:h-32 flex flex-col overflow-hidden">
            <div className="flex items-center gap-2 mb-2 shrink-0">
-              <span className="text-rose-400 text-sm animate-pulse">✨</span>
-              <span className="text-[9px] font-black uppercase text-rose-500/80 tracking-widest">Legacy Synergy Active</span>
+              <span className="text-rose-400 text-xs sm:text-sm animate-pulse">✨</span>
+              <span className="text-[8px] sm:text-[9px] font-black uppercase text-rose-500/80 tracking-widest">Legacy Synergy Active</span>
            </div>
            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-             <div className="flex flex-wrap gap-1.5">
+             <div className="flex flex-wrap gap-1 sm:gap-1.5">
                 {rebirthBonus > 1 && (
-                  <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/20 whitespace-nowrap">Mastery X{rebirthBonus}</span>
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase px-2 py-0.5 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/20 whitespace-nowrap">Mastery X{rebirthBonus}</span>
                 )}
                 {activeLegacyUpgrades.map(u => (
-                  <span key={u.id} className="text-[8px] font-black uppercase px-2 py-0.5 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/20 whitespace-nowrap">{u.shortDescription}</span>
+                  <span key={u.id} className="text-[7px] sm:text-[8px] font-black uppercase px-2 py-0.5 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/20 whitespace-nowrap">{u.shortDescription}</span>
                 ))}
              </div>
            </div>
@@ -256,9 +234,9 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
       <div className="mt-auto space-y-4 shrink-0">
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] uppercase font-black text-slate-500">
-              <span>Progress to {nextMilestone}</span>
-              <span className="text-sky-400">x2.0 Production</span>
+            <div className="flex justify-between text-[9px] sm:text-[10px] uppercase font-black text-slate-500">
+              <span className="truncate pr-2">Progress to {nextMilestone}</span>
+              <span className="text-sky-400 shrink-0">x2.0 Prod</span>
             </div>
             <div className="w-full h-1 bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
               <div className="h-full bg-sky-500 transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -266,9 +244,9 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] uppercase font-black text-slate-500">
-              <span>Refine to Lv.{refineMilestone.next}</span>
-              <span className="text-amber-400">x3.0 Production</span>
+            <div className="flex justify-between text-[9px] sm:text-[10px] uppercase font-black text-slate-500">
+              <span className="truncate pr-2">Refine to Lv.{refineMilestone.next}</span>
+              <span className="text-amber-400 shrink-0">x3.0 Prod</span>
             </div>
             <div className="w-full h-1 bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
               <div className="h-full bg-amber-500 transition-all duration-300" style={{ width: `${refineMilestone.progress}%` }} />
@@ -283,13 +261,13 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
               if (bulkData.canAfford) onBuy(building.id, buyQuantity); 
             }} 
             disabled={!bulkData.canAfford}
-            className={`flex flex-col items-center justify-center py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 border-b-2 h-14
+            className={`flex flex-col items-center justify-center py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 border-b-2 h-14
               ${bulkData.canAfford ? 'bg-emerald-600 border-emerald-800 text-white' : 'bg-slate-800 border-slate-900 text-slate-500 opacity-60'}`}
           >
             <span className="truncate w-full text-center">Build {buyQuantity === 'max' ? bulkData.amount : bulkData.targetAmount}x</span>
-            <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 mt-0.5">
+            <div className="flex flex-wrap justify-center gap-x-1 sm:gap-x-1.5 gap-y-0.5 mt-0.5">
                {Object.entries(bulkData.costs).map(([res, val]) => (val as number > 0 || (buyQuantity === 'max' && bulkData.targetAmount === 0)) && (
-                  <span key={res} className={`text-[10px] font-black flex items-center gap-0.5 ${(currentResources[res as ResourceType] < (val as number)) ? 'text-rose-400' : 'text-emerald-50'}`}>
+                  <span key={res} className={`text-[8px] sm:text-[10px] font-black flex items-center gap-0.5 ${(currentResources[res as ResourceType] < (val as number)) ? 'text-rose-400' : 'text-emerald-50'}`}>
                     {formatNumber(val as number)}{ICON_MAP[res]}
                   </span>
                ))}
@@ -302,13 +280,13 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
                 if (bulkRefineData.canAfford) onRefine(building.id, buyQuantity); 
               }} 
               disabled={!bulkRefineData.canAfford}
-              className={`flex flex-col items-center justify-center py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 border-b-2 h-14
+              className={`flex flex-col items-center justify-center py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 border-b-2 h-14
                 ${bulkRefineData.canAfford ? 'bg-sky-600 border-sky-800 text-white' : 'bg-slate-800 border-slate-900 text-slate-500 opacity-60'}`}
             >
               <span className="truncate w-full text-center">Refine {displayRefineAmount}x</span>
-              <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 mt-0.5">
+              <div className="flex flex-wrap justify-center gap-x-1 sm:gap-x-1.5 gap-y-0.5 mt-0.5">
                  {Object.entries(bulkRefineData.costs).map(([res, val]) => (val as number > 0 || (buyQuantity === 'max' && bulkRefineData.targetAmount === 0)) && (
-                    <span key={res} className={`text-[10px] font-black flex items-center gap-0.5 ${(currentResources[res as ResourceType] < (val as number)) ? 'text-rose-400' : 'text-sky-50'}`}>
+                    <span key={res} className={`text-[8px] sm:text-[10px] font-black flex items-center gap-0.5 ${(currentResources[res as ResourceType] < (val as number)) ? 'text-rose-400' : 'text-sky-50'}`}>
                       {formatNumber(val as number)}{ICON_MAP[res]}
                     </span>
                  ))}
@@ -318,21 +296,21 @@ export const BuildingCard: React.FC<BuildingCardProps> = memo(({
         </div>
       </div>
 
-      <div className="mt-5 pt-4 border-t border-slate-800/60 flex justify-between items-center text-[11px] font-mono shrink-0">
+      <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-800/60 flex justify-between items-center text-[10px] sm:text-[11px] font-mono shrink-0">
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
-            <span className="text-slate-500 uppercase font-black text-[10px]">Efficiency</span>
+            <span className="text-slate-500 uppercase font-black text-[9px] sm:text-[10px]">Efficiency</span>
             {hasLegacyBoost && (
-              <span className="text-rose-400 text-[10px] animate-pulse" title="Permanent Legacy Boost Active">✨</span>
+              <span className="text-rose-400 text-[9px] sm:text-[10px] animate-pulse" title="Permanent Legacy Boost Active">✨</span>
             )}
           </div>
-          <span className={`font-black text-sm transition-all duration-700 ${hasLegacyBoost ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]' : multiplier > 100 ? 'text-amber-400' : 'text-sky-400'}`}>
+          <span className={`font-black text-xs sm:text-sm transition-all duration-700 ${hasLegacyBoost ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]' : multiplier > 100 ? 'text-amber-400' : 'text-sky-400'}`}>
             x{formatNumber(multiplier)}
           </span>
         </div>
         <div className="flex flex-col text-right">
-          <span className="text-slate-500 uppercase font-black text-[10px]">Total Yield</span>
-          <span className="text-slate-200 font-black text-sm">{formatNumber(building.produces.amount * multiplier * specialMult)} {ICON_MAP[building.produces.resource]}/s</span>
+          <span className="text-slate-500 uppercase font-black text-[9px] sm:text-[10px]">Total Yield</span>
+          <span className="text-slate-200 font-black text-xs sm:text-sm truncate max-w-[120px]">{formatNumber(building.produces.amount * multiplier * specialMult)} {ICON_MAP[building.produces.resource]}/s</span>
         </div>
       </div>
     </div>

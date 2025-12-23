@@ -50,7 +50,7 @@ export const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({ onConfir
   const handleContextMenu = (e: React.MouseEvent) => e.preventDefault();
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl p-4">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl p-4">
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-10 max-w-md w-full shadow-[0_0_50px_rgba(0,0,0,0.5)] text-center space-y-8 border-t-rose-500/30">
         <div className="space-y-3">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
