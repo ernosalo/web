@@ -67,12 +67,12 @@ const TodoItem: React.FC<TodoItemProps> = ({
       onDragEnter={() => onDragEnter(todo.id)}
       onDragEnd={onDragEnd}
       onDragOver={(e) => e.preventDefault()}
-      className={`group flex items-center gap-4 p-4 mb-1 border-b transition-all cursor-default bg-transparent
+      className={`group flex items-start gap-4 p-4 mb-1 border-b transition-all cursor-default bg-transparent
         ${todo.completed ? 'opacity-40' : 'opacity-100'}
         ${isDragging ? 'scale-[1.02] bg-slate-100/50 dark:bg-zinc-900/50 border-black dark:border-white z-50' : 'border-slate-100 dark:border-zinc-900/50'}
         hover:bg-slate-100/30 dark:hover:bg-zinc-900/30 task-enter`}
     >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+      <div className="flex items-start gap-3 flex-1 min-w-0 pt-0.5">
         <div className={`cursor-grab active:cursor-grabbing p-1 text-slate-300 dark:text-zinc-800 hover:text-slate-500 dark:hover:text-zinc-600 transition-colors shrink-0 ${isEditing ? 'invisible' : ''}`}>
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-12a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
@@ -81,7 +81,7 @@ const TodoItem: React.FC<TodoItemProps> = ({
 
         <button 
           onClick={() => onToggle(todo.id)}
-          className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+          className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all shrink-0 mt-0.5 ${
             todo.completed 
             ? 'bg-black border-black dark:bg-white dark:border-white' 
             : 'border-slate-300 group-hover:border-black dark:border-zinc-700 dark:group-hover:border-white'
@@ -107,7 +107,7 @@ const TodoItem: React.FC<TodoItemProps> = ({
         ) : (
           <span 
             onClick={() => onToggle(todo.id)}
-            className={`text-base cursor-pointer transition-all select-none flex-1 truncate ${
+            className={`text-base cursor-pointer transition-all select-none flex-1 whitespace-normal break-words leading-relaxed ${
               todo.completed 
               ? 'line-through text-slate-400 dark:text-zinc-600' 
               : 'text-slate-700 dark:text-zinc-300'
@@ -118,7 +118,7 @@ const TodoItem: React.FC<TodoItemProps> = ({
         )}
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 pt-0.5">
         <button 
           onClick={handleCopy}
           className={`opacity-0 group-hover:opacity-100 p-2 transition-all ${copied ? 'text-green-500' : 'text-slate-300 dark:text-zinc-700 hover:text-slate-500 dark:hover:text-zinc-400'}`}
