@@ -1,0 +1,5 @@
+{
+  "name": "SIC - Simple Image Converter",
+  "description": "A professional-grade web-based image converter that mimics the logic of the Magick bash script with a modern, high-performance UI.",
+  "requestFramePermissions": []
+}
