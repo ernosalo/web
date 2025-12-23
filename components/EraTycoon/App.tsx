@@ -156,8 +156,14 @@ const App: React.FC = () => {
 
       {isGameRunning && (
         <aside className={`fixed inset-y-0 left-0 w-72 lg:w-80 border-r border-slate-800 bg-slate-900/95 backdrop-blur-2xl flex flex-col z-[200] transition-transform duration-300 shadow-2xl ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 border-b border-slate-800 text-center shrink-0 relative">
-            <h1 className="text-2xl font-black italic text-emerald-400 uppercase tracking-tighter">Era Tycoon</h1>
+          <div className="p-6 border-b border-slate-800 flex items-center justify-between shrink-0 relative">
+            <h1 className="text-2xl font-black italic text-emerald-400 uppercase tracking-tighter ml-2">Era Tycoon</h1>
+            <button 
+              onClick={() => setSidebarOpen(false)} 
+              className="w-10 h-10 bg-slate-800/50 border border-slate-700 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all active:scale-90 hover:bg-slate-700/50"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
           </div>
           
           <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -244,11 +250,6 @@ const App: React.FC = () => {
       <main className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen && isGameRunning ? 'lg:pl-80' : 'pl-0'} relative overflow-hidden`}>
         <header className="h-20 border-b border-slate-800 flex items-center justify-between px-10 bg-slate-900/40 backdrop-blur-xl shrink-0 z-[110]">
           <div className="flex items-center gap-4 shrink-0">
-            {sidebarOpen && (
-              <button onClick={() => setSidebarOpen(false)} className="w-8 h-8 bg-slate-800/50 border border-slate-700 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all active:scale-90">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            )}
             <h2 className="font-black text-xs uppercase tracking-[0.3em] text-slate-500">{activeTab}</h2>
             {showLegacyIndicator && (
               <button 
