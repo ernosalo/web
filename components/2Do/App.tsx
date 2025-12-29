@@ -40,8 +40,14 @@ const App: React.FC = () => {
         const sanitized = sanitizeImportedTasks(json);
 
         if (sanitized.length > 0) {
-          setTodos(sanitized);
-          // Alert removed as requested for a cleaner experience
+          // Merge tasks instead of replacing them
+          setTodos(prev => {
+            const existingIds = new Set(prev.map(t => t.id));
+            // Filter out tasks that already exist to prevent duplicate keys
+            const uniqueNewTasks = sanitized.filter(t => !existingIds.has(t.id));
+            // Prepend new tasks to the existing list (consistent with addTodo behavior)
+            return [...uniqueNewTasks, ...prev];
+          });
         } else {
           alert("The file does not contain any valid tasks.");
         }
