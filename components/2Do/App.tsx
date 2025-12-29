@@ -1,221 +1,84 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Todo } from './types';
+import React from 'react';
+import Header from './components/Header';
+import TodoForm from './components/TodoForm';
+import FilterBar from './components/FilterBar';
 import TodoItem from './components/TodoItem';
-
-type FilterType = 'active' | 'completed';
+import { useTodos } from './hooks/useTodos';
+import { useTheme } from './hooks/useTheme';
+import { sanitizeImportedTasks, downloadTasksAsJSON } from './utils/importExport';
 
 const App: React.FC = () => {
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    const saved = localStorage.getItem('zen_todos_simple');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [inputValue, setInputValue] = useState('');
-  const [activeFilters, setActiveFilters] = useState<FilterType[]>(['active', 'completed']);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const savedTheme = localStorage.getItem('zen_theme');
-    return (savedTheme as 'light' | 'dark') || 'dark';
-  });
-  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const { theme, toggleTheme } = useTheme();
+  const {
+    todos,
+    setTodos,
+    filteredTodos,
+    activeFilters,
+    progress,
+    draggedId,
+    addTodo,
+    toggleTodo,
+    editTodo,
+    deleteTodo,
+    moveCompletedToBottom,
+    toggleFilter,
+    handleDragStart,
+    handleDragEnter,
+    handleDragEnd,
+  } = useTodos();
 
-  useEffect(() => {
-    localStorage.setItem('zen_todos_simple', JSON.stringify(todos));
-  }, [todos]);
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  useEffect(() => {
-    localStorage.setItem('zen_theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const result = e.target?.result;
+        if (typeof result !== 'string') return;
+        const json = JSON.parse(result);
+        const sanitized = sanitizeImportedTasks(json);
 
-  const handleAddTodo = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    const newTodo: Todo = {
-      id: Math.random().toString(36).substr(2, 9),
-      text: inputValue.trim(),
-      completed: false,
-      createdAt: Date.now()
+        if (sanitized.length > 0) {
+          setTodos(sanitized);
+          // Alert removed as requested for a cleaner experience
+        } else {
+          alert("The file does not contain any valid tasks.");
+        }
+      } catch (err) {
+        alert("Failed to parse JSON file.");
+      }
     };
-
-    setTodos(prev => [newTodo, ...prev]);
-    setInputValue('');
+    reader.readAsText(file);
+    event.target.value = '';
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos(prev => prev.map(t => 
-      t.id === id ? { ...t, completed: !t.completed } : t
-    ));
-  };
+  const handleExport = () => downloadTasksAsJSON(todos);
 
-  const editTodo = (id: string, newText: string) => {
-    setTodos(prev => prev.map(t => 
-      t.id === id ? { ...t, text: newText } : t
-    ));
-  };
-
-  const deleteTodo = (id: string) => {
-    setTodos(prev => prev.filter(t => t.id !== id));
-  };
-
-  const moveCompletedToBottom = () => {
-    setTodos(prev => {
-      const active = prev.filter(t => !t.completed);
-      const completed = prev.filter(t => t.completed);
-      return [...active, ...completed];
-    });
-  };
-
-  const toggleFilter = (f: FilterType) => {
-    setActiveFilters(prev => 
-      prev.includes(f) 
-        ? prev.filter(item => item !== f) 
-        : [...prev, f]
-    );
-  };
-
-  const handleDragStart = (id: string) => {
-    setDraggedId(id);
-  };
-
-  const handleDragEnter = (targetId: string) => {
-    if (!draggedId || draggedId === targetId) return;
-
-    const newTodos = [...todos];
-    const draggedIndex = newTodos.findIndex(t => t.id === draggedId);
-    const targetIndex = newTodos.findIndex(t => t.id === targetId);
-
-    if (draggedIndex === -1 || targetIndex === -1) return;
-
-    const [draggedItem] = newTodos.splice(draggedIndex, 1);
-    newTodos.splice(targetIndex, 0, draggedItem);
-    
-    setTodos(newTodos);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedId(null);
-  };
-
-  const filteredTodos = useMemo(() => {
-    const showActive = activeFilters.includes('active');
-    const showCompleted = activeFilters.includes('completed');
-    
-    if (showActive && showCompleted) return todos;
-    if (showActive) return todos.filter(t => !t.completed);
-    if (showCompleted) return todos.filter(t => t.completed);
-    return [];
-  }, [todos, activeFilters]);
-
-  const progress = useMemo(() => {
-    if (todos.length === 0) return 0;
-    return Math.round((todos.filter(t => t.completed).length / todos.length) * 100);
-  }, [todos]);
-
-  const hasBothTypes = useMemo(() => {
-    const hasActive = todos.some(t => !t.completed);
-    const hasCompleted = todos.some(t => t.completed);
-    return hasActive && hasCompleted;
-  }, [todos]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
+  const showMoveCompleted = activeFilters.includes('active') && 
+                            activeFilters.includes('completed') && 
+                            todos.some(t => !t.completed) && 
+                            todos.some(t => t.completed);
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-zinc-950">
       <div className="max-w-xl mx-auto px-6 py-16 md:py-24">
-        <header className="mb-12 relative">
-          <button 
-            onClick={toggleTheme}
-            className="absolute -top-4 -right-2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 transition-colors text-slate-500 dark:text-zinc-400"
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            )}
-          </button>
+        <Header 
+          progress={progress} 
+          theme={theme} 
+          onToggleTheme={toggleTheme}
+          onImport={handleImport}
+          onExport={handleExport}
+        />
 
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white mb-2 font-mono italic">2Do</h1>
-          <div className="flex items-center justify-between">
-            <p className="text-slate-500 dark:text-zinc-500 text-sm font-light">Focus on what matters.</p>
-            <span className="text-xs font-medium text-slate-400 dark:text-zinc-600 uppercase tracking-widest">{progress}% DONE</span>
-          </div>
-          <div className="mt-4 w-full h-[2px] bg-slate-100 dark:bg-zinc-900 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-black dark:bg-white transition-all duration-700 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </header>
+        <TodoForm onAdd={addTodo} />
 
-        <form onSubmit={handleAddTodo} className="mb-10 relative flex items-center group">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="New task"
-            className="w-full bg-transparent text-xl font-light py-2 border-b-2 border-slate-100 focus:outline-none focus:border-black dark:border-zinc-900 dark:focus:border-white transition-colors placeholder-slate-300 dark:placeholder-zinc-700 dark:text-white pr-10"
-          />
-          <button 
-            type="submit"
-            disabled={!inputValue.trim()}
-            className={`absolute right-0 bottom-2 p-2 rounded-full transition-all duration-300 ${
-              inputValue.trim() 
-                ? 'text-black dark:text-white opacity-100 scale-100 hover:bg-slate-100 dark:hover:bg-zinc-900' 
-                : 'text-slate-200 dark:text-zinc-800 opacity-20 scale-90 pointer-events-none'
-            }`}
-            aria-label="Add task"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </form>
-
-        <nav className="flex items-center justify-between mb-8 border-b border-slate-100 dark:border-zinc-900 pb-4">
-          <div className="flex gap-6">
-            {(['active', 'completed'] as const).map((f) => {
-              const isActive = activeFilters.includes(f);
-              return (
-                <button
-                  key={f}
-                  onClick={() => toggleFilter(f)}
-                  className={`text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                    isActive 
-                    ? 'text-black dark:text-white' 
-                    : 'text-slate-300 dark:text-zinc-700 hover:text-slate-400 dark:hover:text-zinc-500'
-                  }`}
-                >
-                  <div className={`w-1.5 h-1.5 rounded-full transition-colors ${isActive ? 'bg-black dark:bg-white' : 'bg-transparent border border-slate-200 dark:border-zinc-800'}`} />
-                  {f}
-                </button>
-              );
-            })}
-          </div>
-
-          {activeFilters.includes('active') && activeFilters.includes('completed') && hasBothTypes && (
-            <button
-              onClick={moveCompletedToBottom}
-              className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-600 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5 group/btn"
-              title="Move completed to bottom"
-            >
-              <svg className="w-3.5 h-3.5 transform transition-transform group-hover/btn:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
-              </svg>
-              <span>Move Completed</span>
-            </button>
-          )}
-        </nav>
+        <FilterBar 
+          activeFilters={activeFilters}
+          onToggleFilter={toggleFilter}
+          onMoveCompleted={moveCompletedToBottom}
+          showMoveCompleted={showMoveCompleted}
+        />
 
         <div className="min-h-[300px]">
           {filteredTodos.length > 0 ? (
