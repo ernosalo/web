@@ -52,6 +52,11 @@ const Home: React.FC = () => {
           title="Era Tycoon" 
           icon="🛖"
         />
+        <ToolCard 
+          to="/smartspend" 
+          title="Income/Expenses Tracker" 
+          icon="📊"
+        />
       </div>
       
       {/* Decorative center element */}

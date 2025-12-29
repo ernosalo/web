@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/Home';
+import Navigation from './components/Navigation';
 import ImageConverter from './components/SIC/App';
 import TodoList from './components/2Do/App';
 import EraTycoon from './components/EraTycoon/App';
-import Navigation from './components/Navigation';
+import SmartSpend from './components/SmartSpend/App';
 
 const App: React.FC = () => {
   const [theme, setTheme] = useState('dark');
@@ -53,7 +54,17 @@ const App: React.FC = () => {
               </div>
             } />
             
-            <Route path="/tycoon" element={<EraTycoon />} />
+            <Route path="/tycoon" element={
+              <div className="pt-24 min-h-screen flex flex-col items-center justify-center">
+                <EraTycoon />
+              </div>
+            } />    
+
+            <Route path="/smartspend" element={
+              <div className="pt-24 min-h-screen flex flex-col items-center justify-center">
+                <SmartSpend />
+              </div>
+            } />          
 
             {/* Fallback to Home */}
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -36,7 +36,8 @@ const Navigation: React.FC<NavigationProps> = ({ theme, toggleTheme }) => {
             {[
               { path: '/converter', label: 'SIC' },
               { path: '/todo', label: '2Do' },
-              { path: '/tycoon', label: 'Tycoon' }
+              { path: '/tycoon', label: 'Tycoon' },
+              { path: '/smartspend', label: 'SmartSpend' }
             ].map((link) => (
               <Link 
                 key={link.path}
